@@ -1,17 +1,15 @@
-import json
+import asyncio
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from flask import Flask, request
 
 TOKEN = "8772622488:AAGldCcRLRa-PWFt_wtGftCODyjICF8IGl4"
 ADMIN_ID = 6843819642
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
-app = Flask(__name__)
 
 
 class ReplyState(StatesGroup):
@@ -22,7 +20,7 @@ class ReplyState(StatesGroup):
 async def cmd_start(message: types.Message):
   if message.from_user.id == ADMIN_ID:
     await message.answer(
-        "👋 Привет, админ! Бот готов принимать анонимки."
+        "👋 Привет, админ! Бот работает 24/7."
     )
   else:
     await message.answer(
@@ -83,14 +81,13 @@ async def send_reply_to_user(message: types.Message, state: FSMContext):
   await state.clear()
 
 
-@app.route("/", methods=["POST", "GET"])
-def webhook():
-  if request.method == "POST":
-    import asyncio
+async def main():
+  # Удаляем старый вебхук на всякий случай, чтобы polling работал корректно
+  await bot.delete_webhook(drop_pending_updates=True)
+  print("Бот запущен и слушает сообщения...")
+  await dp.start_polling(bot)
 
-    json_data = request.get_json(force=True)
-    update = types.Update(**json_data)
-    asyncio.run(dp.feed_update(bot, update))
-    return "OK", 200
-  return "Bot is running on Vercel!", 200
-    
+
+if __name__ == "__main__":
+  asyncio.run(main())
+  
