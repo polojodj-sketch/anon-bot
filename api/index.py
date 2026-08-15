@@ -1,11 +1,10 @@
-import os
+import json
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-# Настройки
 TOKEN = "8772622488:AAGldCcRLRa-PWFt_wtGftCODyjICF8IGl4"
 ADMIN_ID = 6843819642
 
@@ -82,11 +81,16 @@ async def send_reply_to_user(message: types.Message, state: FSMContext):
   await state.clear()
 
 
-# Главная точка входа для Vercel
-async def app(request: types.Request):
-  if request.method == "POST":
-    data = await request.json()
-    update = types.Update(**data)
-    await dp.feed_update(bot, update)
+# Безопасный обработчик для Vercel
+async def app(request):
+  try:
+    # Получаем тело запроса от Telegram
+    body = await request.body()
+    if body:
+      data = json.loads(body.decode("utf-8"))
+      update = types.Update(**data)
+      await dp.feed_update(bot, update)
     return {"statusCode": 200, "body": "OK"}
-  return {"statusCode": 200, "body": "Bot is running on Vercel!"}
+  except Exception as e:
+    return {"statusCode": 200, "body": str(e)}
+  
