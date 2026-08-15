@@ -21,7 +21,7 @@ class ReplyState(StatesGroup):
 async def cmd_start(message: types.Message):
   if message.from_user.id == ADMIN_ID:
     await message.answer(
-        "👋 Привет, админ! Бот на Vercel работает и готов принимать анонимки."
+        "👋 Привет, админ! Бот готов принимать анонимки."
     )
   else:
     await message.answer(
@@ -83,7 +83,7 @@ async def send_reply_to_user(message: types.Message, state: FSMContext):
 
 
 # Главная точка входа для Vercel
-async def handler(request: types.Request):
+async def app(request: types.Request):
   if request.method == "POST":
     data = await request.json()
     update = types.Update(**data)
